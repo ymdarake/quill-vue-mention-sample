@@ -19,15 +19,6 @@ import 'quill-mention';
 import 'quill-mention/dist/quill.mention.min.css';
 
 
-const atValues = [
-  { id: 1, value: 'Fredrik Sundqvist' },
-  { id: 2, value: 'Patrik Sjölin' }
-];
-const hashValues = [
-  { id: 3, value: 'Fredrik Sundqvist 2' },
-  { id: 4, value: 'Patrik Sjölin 2' }
-];
-
 export default {
   name: 'HelloWorld',
   props: {
@@ -41,26 +32,46 @@ export default {
           mention: {
             allowedChars: /^[A-Za-z\sÅÄÖåäö]*$/,
             mentionDenotationChars: ["@", "#"],
-            source: function (searchTerm, renderList, mentionChar) {
-              let values;
-
-              if (mentionChar === "@") {
-                values = atValues;
-              } else {
-                values = hashValues;
+            source: async function (searchTerm, renderList, mentionChar) {
+              async function suggestUser (searchTerm) {
+                const options = [
+                  {
+                    id: 1,
+                    value: 'John'
+                  },
+                  {
+                    id: 2,
+                    value: 'Mark'
+                  },
+                  {
+                    id: 3,
+                    value: 'Bob'
+                  },
+                ];
+                return options.filter((op) => op.value.includes(searchTerm));
               }
-
-              if (searchTerm.length === 0) {
-                renderList(values, searchTerm);
-              } else {
-                const matches = [];
-                for (let i = 0; i < values.length; i++)
-                  if (~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())) matches.push(values[i]);
-                renderList(matches, searchTerm);
+              async function suggestGroup (searchTerm) {
+                const options = [
+                  {
+                    id: 1,
+                    value: 'Sales'
+                  },
+                  {
+                    id: 2,
+                    value: 'Information Systems'
+                  },
+                  {
+                    id: 3,
+                    value: 'New Business Development'
+                  }
+                ];
+                return options.filter((op) => op.value.includes(searchTerm));
               }
-            },
+              const matchedPeople = mentionChar === '@' ? await suggestUser(searchTerm) : await suggestGroup(searchTerm);
+              renderList(matchedPeople);
+            }
           },
-        }
+        },
       }
     }
   },
